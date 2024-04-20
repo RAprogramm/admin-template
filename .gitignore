@@ -1,0 +1,17 @@
+/back/target
+/back/.sqlx
+/back/images
+
+/front/node_modules
+/front/.pnp
+/front/.pnp.js
+/front/coverage
+/front/build
+/front/.DS_Store
+/front/.env.local
+/front/.env.development.local
+/front/.env.test.local
+/front/.env.production.local
+/front/npm-debug.log*
+/front/yarn-debug.log*
+/front/yarn-error.log*

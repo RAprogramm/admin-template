@@ -1,0 +1,25 @@
+swagger.rust.ru {
+    reverse_proxy localhost:8000 {
+        header_down Strict-Transport-Security max-age=31536000;
+    }
+    # Настройка CORS
+    header {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization"
+        Access-Control-Allow-Credentials "true"  # Если необходимо использовать куки или заголовок аутентификации
+    }
+}
+
+admin.rust.ru {
+    reverse_proxy localhost:3000 {
+        header_down Strict-Transport-Security max-age=31536000;
+    }
+    # Настройка CORS
+    header {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization"
+        Access-Control-Allow-Credentials "true"  # Если необходимо использовать куки или заголовок аутентификации
+    }
+}
