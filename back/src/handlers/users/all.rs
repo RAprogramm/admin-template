@@ -3,7 +3,10 @@ use validator::Validate;
 
 use crate::{
     database::users::UserExt,
-    dtos::{users::{FilterUserSchema, UserListResponseSchema}, common::RequestQuerySchema},
+    dtos::{
+        common::RequestQuerySchema,
+        users::{FilterUserSchema, UserListResponseSchema},
+    },
     errors::HttpError,
     AppState,
 };

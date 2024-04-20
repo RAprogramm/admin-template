@@ -1,11 +1,17 @@
-use crate::dtos::articles::{ArticleData, ArticleResponseSchema, FilterArticleSchema, CreateArticleSchema, ArticlesListResponseSchema, UpdateArticleSchema};
+use crate::dtos::articles::{
+    ArticleData, ArticleResponseSchema, ArticlesListResponseSchema, CreateArticleSchema,
+    FilterArticleSchema, UpdateArticleSchema,
+};
 use crate::dtos::common::Response;
-use crate::dtos::projects::{ProjectData, ProjectResponseSchema, ProjectsListResponseSchema, CreateProjectSchema, UpdateProjectSchema, FilterProjectSchema};
+use crate::dtos::projects::{
+    CreateProjectSchema, FilterProjectSchema, ProjectData, ProjectResponseSchema,
+    ProjectsListResponseSchema, UpdateProjectSchema,
+};
 use crate::dtos::users::{
     FilterUserSchema, LoginUserSchema, RegisterUserSchema, UserData, UserListResponseSchema,
     UserLoginResponseSchema, UserResponseSchema,
 };
-use crate::handlers::{files, auth, healthchecker, users, articles, projects};
+use crate::handlers::{articles, auth, files, healthchecker, projects, users};
 use crate::models::user::UserRole;
 use utoipa::{
     openapi::security::{HttpAuthScheme, HttpBuilder, SecurityScheme},

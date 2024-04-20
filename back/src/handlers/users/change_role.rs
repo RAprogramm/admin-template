@@ -1,7 +1,8 @@
 use actix_web::{web, HttpResponse};
 
 use crate::{
-    database::users::UserExt, dtos::users::UpdateUserSchema, errors::HttpError, extractors::auth::Authenticated,  AppState
+    database::users::UserExt, dtos::users::UpdateUserSchema, errors::HttpError,
+    extractors::auth::Authenticated, AppState,
 };
 
 /// Update user role
@@ -40,10 +41,7 @@ pub async fn change_role_by_id(
 
     let update_result = app_state
         .db_client
-        .update_user(
-            Some(*target_user_id),
-            body.role.clone().unwrap_or_default(),
-        )
+        .update_user(Some(*target_user_id), body.role.clone().unwrap_or_default())
         .await?;
 
     match update_result {
