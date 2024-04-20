@@ -1,13 +1,13 @@
 name: Build and Deploy to Prod
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+#
 env:
   SQLX_OFFLINE: true
   DATABASE_URL: ${{secrets.DATABASE_URL}}
@@ -66,12 +66,12 @@ jobs:
       # Запуск миграций базы данных для бэкенда
       - name: Run Database Migrations
         working-directory: ./back
-        run: sqlx migrate run -D "postgresql://postgres:password123@0.0.0.0:5432/habdev_admin?schema=public"
+        run: sqlx migrate run -D "postgresql://postgres:password123@0.0.0.0:5432/rust_admin?schema=public"
 
       # Генерация SQLX Prepared Queries для бэкенда
       - name: Generate SQLX Prepared Queries
         working-directory: ./back
-        run: cargo sqlx prepare -D "postgresql://postgres:password123@0.0.0.0:5432/habdev_admin?schema=public"
+        run: cargo sqlx prepare -D "postgresql://postgres:password123@0.0.0.0:5432/rust_admin?schema=public"
 
       # Сборка бэкенда
       - name: Build backend
@@ -94,7 +94,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: hramickih/backend:latest
+          tags: <username>/backend:latest
           context: ./back
 
       # Сборка и пуш front-образа
@@ -102,7 +102,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: hramickih/frontend:latest
+          tags: <username>/frontend:latest
           context: ./front
           
   deploy:
