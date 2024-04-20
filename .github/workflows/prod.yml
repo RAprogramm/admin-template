@@ -1,4 +1,4 @@
-name: Build and Deploy to Prod
+# name: Build and Deploy to Prod
 
 # on:
 #   push:
@@ -8,165 +8,165 @@ name: Build and Deploy to Prod
 #     branches:
 #       - main
 #
-env:
-  SQLX_OFFLINE: true
-  DATABASE_URL: ${{secrets.DATABASE_URL}}
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: ${{secrets.POSTGRES_USER}}
-          POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
-          POSTGRES_DB: ${{secrets.POSTGRES_DB}}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # Установка Node.js для фронтенда
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-
-      # Установка зависимостей фронтенда
-      - name: Install frontend dependencies
-        working-directory: ./front
-        run: yarn install
-
-      # Сборка фронтенда
-      - name: Build frontend
-        working-directory: ./front
-        run: yarn build
-
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v1
-      #   with:
-      #     # working-directory: ./front
-      #     # Upload dist repository
-      #     path: './front/dist'
-
-      # Установка Rust для бэкенда
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-
-      # Установка SQLx CLI для бэкенда
-      - name: Install SQLx CLI
-        working-directory: ./back
-        run: cargo install sqlx-cli --no-default-features --features native-tls,postgres
-
-      # Запуск миграций базы данных для бэкенда
-      - name: Run Database Migrations
-        working-directory: ./back
-        run: sqlx migrate run -D "postgresql://postgres:password123@0.0.0.0:5432/rust_admin?schema=public"
-
-      # Генерация SQLX Prepared Queries для бэкенда
-      - name: Generate SQLX Prepared Queries
-        working-directory: ./back
-        run: cargo sqlx prepare -D "postgresql://postgres:password123@0.0.0.0:5432/rust_admin?schema=public"
-
-      # Сборка бэкенда
-      - name: Build backend
-        working-directory: ./back
-        run: cargo build --release --locked --verbose
-
-      # Настройка Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      # Логин в Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{secrets.DOCKER_USERNAME}}
-          password: ${{secrets.DOCKER_PASSWORD}}
-
-      # Сборка и пуш back-образа
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: <username>/backend:latest
-          context: ./back
-
-      # Сборка и пуш front-образа
-      - name: Build and push frontend
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: <username>/frontend:latest
-          context: ./front
-          
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      # Логин в Docker Hub для деплоя
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # Установка sshpass для копирования файлов на сервер
-      - name: Install sshpass
-        run: sudo apt-get install sshpass
-
-      # Копирование файлов на сервер
-      - name: Copy files to server
-        run: |
-          sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no Caddyfile root@${{ secrets.VPS_IP }}:~
-          sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no docker-compose.prod.network.yml root@${{ secrets.VPS_IP }}:~
-          sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no docker-compose.prod.yml root@${{ secrets.VPS_IP }}:~
-          mkdir back
-          sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no back/.env root@${{ secrets.VPS_IP }}:~
-          mkdir front
-          sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no front/.env root@${{ secrets.VPS_IP }}:~
-
-      # Деплой на сервер
-      - name: Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_IP }}
-          username: root
-          password: ${{ secrets.VPS_PASSWORD }}
-          script: |
-            cd ~
-            export DATABASE_URL=${{ secrets.DATABASE_URL }}
-            export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-            export JWT_MAXAGE=${{ secrets.JWT_MAXAGE }}
-            export POSTGRES_USER=${{secrets.POSTGRES_USER}}
-            export POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}}
-            export POSTGRES_DB=${{secrets.POSTGRES_DB}}
-            export ENVIRONMENT=${{secrets.ENVIRONMENT}}
-            export LOG_LEVEL=${{secrets.LOG_LEVEL}}
-            export BACK_URL=${{secrets.BACK_URL}}
-            export BACK_PORT=${{secrets.BACK_PORT}}
-            export FRONT_URL=${{secrets.FRONT_URL}}
-            export FRONT_PORT=${{secrets.FRONT_PORT}}
-            export ADMIN_NAME=${{secrets.ADMIN_NAME}}
-            export ADMIN_EMAIL=${{secrets.ADMIN_EMAIL}}
-            export ADMIN_PASSWORD=${{secrets.ADMIN_PASSWORD}}
-            export STORAGE_PATH=${{secrets.STORAGE_PATH}}
-            export VITE_NODE_ENV=${{secrets.VITE_NODE_ENV}}
-            export VITE_COOKIE_NAME=${{secrets.VITE_COOKIE_NAME}}
-            export VITE_PROD_API_URL=${{secrets.VITE_PROD_API_URL}}
-            export VITE_DEV_API_URL=${{secrets.VITE_DEV_API_URL}}
-            export VITE_BACK_DEV_API_URL=${{secrets.VITE_BACK_DEV_API_URL}}
-            export VITE_BACK_PROD_API_URL=${{secrets.VITE_BACK_PROD_API_URL}}
-            docker-compose down
-            docker pull hramickih/backend:latest
-            docker pull hramickih/frontend:latest
-            docker-compose -f docker-compose.prod.network.yml -f docker-compose.prod.yml up -d
+# env:
+#   SQLX_OFFLINE: true
+#   DATABASE_URL: ${{secrets.DATABASE_URL}}
+#
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#
+#     services:
+#       postgres:
+#         image: postgres
+#         ports:
+#           - 5432:5432
+#         env:
+#           POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+#           POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+#           POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+#
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+#
+#       # Установка Node.js для фронтенда
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#
+#       # Установка зависимостей фронтенда
+#       - name: Install frontend dependencies
+#         working-directory: ./front
+#         run: yarn install
+#
+#       # Сборка фронтенда
+#       - name: Build frontend
+#         working-directory: ./front
+#         run: yarn build
+#
+#       # - name: Upload artifact
+#       #   uses: actions/upload-pages-artifact@v1
+#       #   with:
+#       #     # working-directory: ./front
+#       #     # Upload dist repository
+#       #     path: './front/dist'
+#
+#       # Установка Rust для бэкенда
+#       - name: Install Rust
+#         uses: actions-rs/toolchain@v1
+#         with:
+#           profile: minimal
+#           toolchain: stable
+#
+#       # Установка SQLx CLI для бэкенда
+#       - name: Install SQLx CLI
+#         working-directory: ./back
+#         run: cargo install sqlx-cli --no-default-features --features native-tls,postgres
+#
+#       # Запуск миграций базы данных для бэкенда
+#       - name: Run Database Migrations
+#         working-directory: ./back
+#         run: sqlx migrate run -D "postgresql://postgres:password123@0.0.0.0:5432/rust_admin?schema=public"
+#
+#       # Генерация SQLX Prepared Queries для бэкенда
+#       - name: Generate SQLX Prepared Queries
+#         working-directory: ./back
+#         run: cargo sqlx prepare -D "postgresql://postgres:password123@0.0.0.0:5432/rust_admin?schema=public"
+#
+#       # Сборка бэкенда
+#       - name: Build backend
+#         working-directory: ./back
+#         run: cargo build --release --locked --verbose
+#
+#       # Настройка Docker Buildx
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
+#
+#       # Логин в Docker Hub
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{secrets.DOCKER_USERNAME}}
+#           password: ${{secrets.DOCKER_PASSWORD}}
+#
+#       # Сборка и пуш back-образа
+#       - name: Build and push
+#         uses: docker/build-push-action@v5
+#         with:
+#           push: true
+#           tags: <username>/backend:latest
+#           context: ./back
+#
+#       # Сборка и пуш front-образа
+#       - name: Build and push frontend
+#         uses: docker/build-push-action@v5
+#         with:
+#           push: true
+#           tags: <username>/frontend:latest
+#           context: ./front
+#           
+#   deploy:
+#     needs: build
+#     runs-on: ubuntu-latest
+#
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+#
+#       # Логин в Docker Hub для деплоя
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v1
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#       # Установка sshpass для копирования файлов на сервер
+#       - name: Install sshpass
+#         run: sudo apt-get install sshpass
+#
+#       # Копирование файлов на сервер
+#       - name: Copy files to server
+#         run: |
+#           sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no Caddyfile root@${{ secrets.VPS_IP }}:~
+#           sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no docker-compose.prod.network.yml root@${{ secrets.VPS_IP }}:~
+#           sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no docker-compose.prod.yml root@${{ secrets.VPS_IP }}:~
+#           mkdir back
+#           sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no back/.env root@${{ secrets.VPS_IP }}:~
+#           mkdir front
+#           sshpass -v -p '${{ secrets.VPS_PASSWORD }}' scp -o StrictHostKeyChecking=no front/.env root@${{ secrets.VPS_IP }}:~
+#
+#       # Деплой на сервер
+#       - name: Deploy
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.VPS_IP }}
+#           username: root
+#           password: ${{ secrets.VPS_PASSWORD }}
+#           script: |
+#             cd ~
+#             export DATABASE_URL=${{ secrets.DATABASE_URL }}
+#             export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+#             export JWT_MAXAGE=${{ secrets.JWT_MAXAGE }}
+#             export POSTGRES_USER=${{secrets.POSTGRES_USER}}
+#             export POSTGRES_PASSWORD=${{secrets.POSTGRES_PASSWORD}}
+#             export POSTGRES_DB=${{secrets.POSTGRES_DB}}
+#             export ENVIRONMENT=${{secrets.ENVIRONMENT}}
+#             export LOG_LEVEL=${{secrets.LOG_LEVEL}}
+#             export BACK_URL=${{secrets.BACK_URL}}
+#             export BACK_PORT=${{secrets.BACK_PORT}}
+#             export FRONT_URL=${{secrets.FRONT_URL}}
+#             export FRONT_PORT=${{secrets.FRONT_PORT}}
+#             export ADMIN_NAME=${{secrets.ADMIN_NAME}}
+#             export ADMIN_EMAIL=${{secrets.ADMIN_EMAIL}}
+#             export ADMIN_PASSWORD=${{secrets.ADMIN_PASSWORD}}
+#             export STORAGE_PATH=${{secrets.STORAGE_PATH}}
+#             export VITE_NODE_ENV=${{secrets.VITE_NODE_ENV}}
+#             export VITE_COOKIE_NAME=${{secrets.VITE_COOKIE_NAME}}
+#             export VITE_PROD_API_URL=${{secrets.VITE_PROD_API_URL}}
+#             export VITE_DEV_API_URL=${{secrets.VITE_DEV_API_URL}}
+#             export VITE_BACK_DEV_API_URL=${{secrets.VITE_BACK_DEV_API_URL}}
+#             export VITE_BACK_PROD_API_URL=${{secrets.VITE_BACK_PROD_API_URL}}
+#             docker-compose down
+#             docker pull <dockername>/backend:latest
+#             docker pull <dockername>/frontend:latest
+#             docker-compose -f docker-compose.prod.network.yml -f docker-compose.prod.yml up -d

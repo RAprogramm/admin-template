@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 
 use crate::{
-    database::users::UserExt, errors::HttpError, extractors::auth::Authenticated,  AppState
+    database::users::UserExt, errors::HttpError, extractors::auth::Authenticated, AppState,
 };
 
 /// Delete user
@@ -41,7 +41,7 @@ pub async fn remove_user(
 
     app_state
         .db_client
-        .delete_user( Some(*target_user_id))
+        .delete_user(Some(*target_user_id))
         .await?;
 
     Ok(HttpResponse::NoContent().finish())

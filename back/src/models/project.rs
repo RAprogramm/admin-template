@@ -7,7 +7,7 @@ pub struct ProjectModel {
     pub id: Uuid,
     pub title: String,
     pub description: String,
-    pub cover: String, 
+    pub cover: String,
     pub slug: String,
     pub category: String,
     pub tags: Vec<String>,
@@ -16,4 +16,3 @@ pub struct ProjectModel {
     #[serde(rename = "updatedAt")]
     pub updated_at: Option<DateTime<Utc>>,
 }
-

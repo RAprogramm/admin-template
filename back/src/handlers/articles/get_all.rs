@@ -3,7 +3,10 @@ use validator::Validate;
 
 use crate::{
     database::articles::ArticleExt,
-    dtos::{articles::{FilterArticleSchema, ArticlesListResponseSchema}, common::RequestQuerySchema},
+    dtos::{
+        articles::{ArticlesListResponseSchema, FilterArticleSchema},
+        common::RequestQuerySchema,
+    },
     errors::HttpError,
     AppState,
 };
@@ -42,7 +45,7 @@ pub async fn all_articles(
         Some(tags_str) => {
             let tags_vec: Vec<String> = tags_str.split(',').map(|s| s.trim().to_string()).collect();
             Some(tags_vec)
-        },
+        }
         None => None,
     };
 

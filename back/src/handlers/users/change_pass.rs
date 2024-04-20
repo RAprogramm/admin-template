@@ -53,5 +53,4 @@ pub async fn change_pass(
     } else {
         Err(HttpError::unauthorized(ErrorMessage::WrongCredentials))
     }
-
 }

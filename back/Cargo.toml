@@ -11,21 +11,21 @@ actix-cors = "0.7.0"
 actix-web = "4.5.1"
 actix-multipart = "0.6.1"
 argon2 = "0.5.3"
-async-trait = "0.1.77"
-chrono = { version = "0.4.33", features = ["serde"] }
+async-trait = "0.1.80"
+chrono = { version = "0.4.38", features = ["serde"] }
 dotenv = "0.15.0"
-env_logger = { version = "0.11.1", features = ["color"] }
-log = "0.4.20"
+env_logger = { version = "0.11.3", features = ["color"] }
+log = "0.4.21"
 futures-util = "0.3.30"
 futures = "0.3.30"
-jsonwebtoken = "9.2.0"
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.113"
-sqlx = { version = "0.7.3", features = ["tls-native-tls", "runtime-async-std", "postgres", "chrono", "uuid"] }
+jsonwebtoken = "9.3.0"
+serde = { version = "1.0.198", features = ["derive"] }
+serde_json = "1.0.116"
+sqlx = { version = "0.7.4", features = ["tls-native-tls", "runtime-async-std", "postgres", "chrono", "uuid"] }
 utoipa = { version = "4.2.0", features = ["chrono", "actix_extras", "uuid"] }
 utoipa-swagger-ui = { version = "6.0.0", features = ["actix-web"] }
-uuid = { version = "1.7.0", features = ["serde", "v4"] }
-validator = { version = "0.16.1", features = ["derive"] }
+uuid = { version = "1.8.0", features = ["serde", "v4"] }
+validator = { version = "0.18.1", features = ["derive"] }
 slugify = "0.1.0"
-bytes = "1.5.0"
+bytes = "1.6.0"
 mime_guess = "2.0.4"

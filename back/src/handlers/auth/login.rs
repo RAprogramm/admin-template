@@ -5,7 +5,10 @@ use crate::{
     utils::{password, token},
     AppState,
 };
-use actix_web::{cookie::{time::Duration as ActixWebDuration, Cookie, SameSite}, web, HttpResponse};
+use actix_web::{
+    cookie::{time::Duration as ActixWebDuration, Cookie, SameSite},
+    web, HttpResponse,
+};
 use validator::Validate;
 
 /// Login user to system

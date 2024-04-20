@@ -3,7 +3,10 @@ use validator::Validate;
 
 use crate::{
     database::projects::ProjectExt,
-    dtos::{projects::{FilterProjectSchema, ProjectsListResponseSchema}, common::RequestQuerySchema},
+    dtos::{
+        common::RequestQuerySchema,
+        projects::{FilterProjectSchema, ProjectsListResponseSchema},
+    },
     errors::HttpError,
     AppState,
 };
@@ -42,7 +45,7 @@ pub async fn all_projects(
         Some(tags_str) => {
             let tags_vec: Vec<String> = tags_str.split(',').map(|s| s.trim().to_string()).collect();
             Some(tags_vec)
-        },
+        }
         None => None,
     };
 
@@ -75,4 +78,3 @@ pub async fn all_projects(
         total_pages: (total_projects as f64 / limit as f64).ceil() as usize,
     }))
 }
-
